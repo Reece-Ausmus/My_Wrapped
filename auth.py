@@ -1,11 +1,8 @@
+from dotenv import set_key
 import requests
 import webbrowser
-from flask import Flask, request
+from flask import request, Blueprint
 import os
-from dotenv import load_dotenv
-
-# Load environment variables
-load_dotenv()
 
 # Spotify API credentials
 CLIENT_ID = os.getenv('CLIENT_ID')
@@ -13,14 +10,9 @@ CLIENT_SECRET = os.getenv('CLIENT_SECRET')
 REDIRECT_URI = os.getenv('REDIRECT_URI')
 SCOPES = 'user-read-playback-state user-top-read'
 
-# Flask app to handle the redirect
-app = Flask(__name__)
+auth_bp = Blueprint('auth', __name__)
 
-@app.route('/')
-def home():
-    return "Go to /login to start the authorization process."
-
-@app.route('/login')
+@auth_bp.route('/')
 def login():
     # Step 1: Redirect user to Spotify authorization
     auth_url = 'https://accounts.spotify.com/authorize'
@@ -34,7 +26,7 @@ def login():
     webbrowser.open(auth_request_url)  # Automatically open the URL in the browser
     return "Opening Spotify authorization page. Please authorize the app."
 
-@app.route('/callback')
+@auth_bp.route('/callback')
 def callback():
     # Step 2: Spotify redirects to this URL with `code` as a query parameter
     code = request.args.get('code')
@@ -62,11 +54,38 @@ def callback():
     access_token = tokens['access_token']
     refresh_token = tokens['refresh_token']
 
+    # Store tokens in .env file
+    set_key('.env', 'ACCESS_TOKEN', access_token)
+    set_key('.env', 'REFRESH_TOKEN', refresh_token)
+    
     # Save or display the tokens
     return f"Access Token: {access_token}<br>Refresh Token: {refresh_token}"
 
-# Start the Flask server
-if __name__ == '__main__':
-    print("Starting the server... Opening the login page.")
-    webbrowser.open('http://127.0.0.1:12398/login')
-    app.run(port=12398)
+@auth_bp.route('/refresh_token')
+def refresh_token():
+    # Step 1: Request a new access token using the refresh token
+    token_url = 'https://accounts.spotify.com/api/token'
+    data = {
+        'grant_type': 'refresh_token',
+        'refresh_token': request.args.get('refresh_token'),
+        'client_id': CLIENT_ID,
+        'client_secret': CLIENT_SECRET,
+    }
+    headers = {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'Authorization': f'Basic {CLIENT_ID}:{CLIENT_SECRET}'
+    }
+    response = requests.post(token_url, data=data, headers=headers)
+    tokens = response.json()
+
+    if 'access_token' not in tokens:
+        return f"Failed to retrieve access token: {tokens.get('error', 'Unknown error')}"
+
+    access_token = tokens['access_token']
+    set_key('.env', 'ACCESS_TOKEN', access_token)
+    if 'refresh_token' in tokens:
+        refresh_token = tokens['refresh_token']
+        set_key('.env', 'REFRESH_TOKEN', refresh_token)
+
+    # Save or display the new access token
+    return f"Access Token: {access_token}"

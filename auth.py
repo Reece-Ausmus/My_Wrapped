@@ -1,3 +1,4 @@
+import time
 from dotenv import set_key
 import requests
 import webbrowser
@@ -46,24 +47,29 @@ def callback():
         'Content-Type': 'application/x-www-form-urlencoded',
     }
     response = requests.post(token_url, data=data, headers=headers)
-    tokens = response.json()
+    response_data = response.json()
 
-    if 'access_token' not in tokens:
-        return f"Failed to retrieve access token: {tokens.get('error', 'Unknown error')}"
+    if 'access_token' not in response_data:
+        return f"Failed to retrieve access token: {response_data.get('error', 'Unknown error')}"
 
-    access_token = tokens['access_token']
-    refresh_token = tokens['refresh_token']
+    access_token = response_data['access_token']
+    refresh_token = response_data['refresh_token']
+    expires_in = response_data['expires_in']
 
     # Store tokens in .env file
     set_key('.env', 'ACCESS_TOKEN', access_token)
     set_key('.env', 'REFRESH_TOKEN', refresh_token)
+    set_key('.env', 'TOKEN_EXPIRATION', str(time.time() + expires_in))
     
     # Save or display the tokens
     return f"Access Token: {access_token}<br>Refresh Token: {refresh_token}"
 
-@auth_bp.route('/refresh_token')
+def get_access_token():
+    if os.getenv('TOKEN_EXPIRATION') and float(os.getenv('TOKEN_EXPIRATION')) > time.time():
+        return os.getenv('ACCESS_TOKEN')
+    return refresh_token()
+
 def refresh_token():
-    # Step 1: Request a new access token using the refresh token
     token_url = 'https://accounts.spotify.com/api/token'
     data = {
         'grant_type': 'refresh_token',
@@ -87,5 +93,4 @@ def refresh_token():
         refresh_token = tokens['refresh_token']
         set_key('.env', 'REFRESH_TOKEN', refresh_token)
 
-    # Save or display the new access token
     return f"Access Token: {access_token}"

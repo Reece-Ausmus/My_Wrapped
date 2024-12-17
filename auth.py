@@ -4,6 +4,8 @@ import requests
 import webbrowser
 from flask import request, Blueprint
 import os
+import base64
+from dotenv import load_dotenv
 
 # Spotify API credentials
 CLIENT_ID = os.getenv('CLIENT_ID')
@@ -15,7 +17,6 @@ auth_bp = Blueprint('auth', __name__)
 
 @auth_bp.route('/')
 def login():
-    # Step 1: Redirect user to Spotify authorization
     auth_url = 'https://accounts.spotify.com/authorize'
     params = {
         'client_id': CLIENT_ID,
@@ -29,12 +30,10 @@ def login():
 
 @auth_bp.route('/callback')
 def callback():
-    # Step 2: Spotify redirects to this URL with `code` as a query parameter
     code = request.args.get('code')
     if not code:
         return "Authorization failed or denied. Please try again."
 
-    # Step 3: Exchange authorization code for access token
     token_url = 'https://accounts.spotify.com/api/token'
     data = {
         'grant_type': 'authorization_code',
@@ -60,37 +59,48 @@ def callback():
     set_key('.env', 'ACCESS_TOKEN', access_token)
     set_key('.env', 'REFRESH_TOKEN', refresh_token)
     set_key('.env', 'TOKEN_EXPIRATION', str(time.time() + expires_in))
+    load_dotenv(override=True)  # Reload the environment variables
+
+    webbrowser.open('http://localhost:12398/playback')  # Automatically open the playback page
     
-    # Save or display the tokens
-    return f"Access Token: {access_token}<br>Refresh Token: {refresh_token}"
+    return f"Authorized. Redirecting to the playback page..."
 
 def get_access_token():
-    if os.getenv('TOKEN_EXPIRATION') and float(os.getenv('TOKEN_EXPIRATION')) > time.time():
+    TOKEN_EXPIRATION = os.getenv('TOKEN_EXPIRATION')
+    if TOKEN_EXPIRATION and float(TOKEN_EXPIRATION) > time.time():
         return os.getenv('ACCESS_TOKEN')
+    print("Access token expired. Refreshing token...")
     return refresh_token()
 
 def refresh_token():
     token_url = 'https://accounts.spotify.com/api/token'
     data = {
         'grant_type': 'refresh_token',
-        'refresh_token': request.args.get('refresh_token'),
+        'refresh_token': os.getenv('REFRESH_TOKEN'),
         'client_id': CLIENT_ID,
         'client_secret': CLIENT_SECRET,
     }
+    auth_str = f"{CLIENT_ID}:{CLIENT_SECRET}"
+    b64_auth_str = base64.b64encode(auth_str.encode())
+
     headers = {
         'Content-Type': 'application/x-www-form-urlencoded',
-        'Authorization': f'Basic {CLIENT_ID}:{CLIENT_SECRET}'
+        'Authorization': f'Basic {b64_auth_str}'
     }
     response = requests.post(token_url, data=data, headers=headers)
-    tokens = response.json()
+    response_data = response.json()
 
-    if 'access_token' not in tokens:
-        return f"Failed to retrieve access token: {tokens.get('error', 'Unknown error')}"
+    if 'access_token' not in response_data:
+        return f"Failed to retrieve access token: {response_data.get('error', 'Unknown error')}"
 
-    access_token = tokens['access_token']
+    access_token = response_data['access_token']
     set_key('.env', 'ACCESS_TOKEN', access_token)
-    if 'refresh_token' in tokens:
-        refresh_token = tokens['refresh_token']
+    if 'refresh_token' in response_data:
+        refresh_token = response_data['refresh_token']
         set_key('.env', 'REFRESH_TOKEN', refresh_token)
+    if 'expires_in' in response_data:
+        expires_in = response_data['expires_in']
+        set_key('.env', 'TOKEN_EXPIRATION', str(time.time() + expires_in))
+    load_dotenv(override=True)  # Reload the environment variables
 
-    return f"Access Token: {access_token}"
+    return access_token

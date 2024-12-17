@@ -1,11 +1,10 @@
 import time
-from dotenv import set_key
 import requests
 import webbrowser
 from flask import request, Blueprint
 import os
 import base64
-from dotenv import load_dotenv
+from dotenv import load_dotenv, set_key
 
 # Spotify API credentials
 CLIENT_ID = os.getenv('CLIENT_ID')

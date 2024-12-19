@@ -1,7 +1,7 @@
 import time
 import requests
 import webbrowser
-from flask import request, Blueprint
+from flask import redirect, request, Blueprint, url_for
 import os
 import base64
 from dotenv import load_dotenv, set_key
@@ -24,8 +24,7 @@ def login():
         'scope': SCOPES
     }
     auth_request_url = f"{auth_url}?{requests.compat.urlencode(params)}"
-    webbrowser.open(auth_request_url)  # Automatically open the URL in the browser
-    return "Opening Spotify authorization page. Please authorize the app."
+    return redirect(auth_request_url)
 
 @auth_bp.route('/callback')
 def callback():
@@ -60,9 +59,7 @@ def callback():
     set_key('.env', 'TOKEN_EXPIRATION', str(time.time() + expires_in))
     load_dotenv(override=True)  # Reload the environment variables
 
-    webbrowser.open('http://localhost:12398/playback')  # Automatically open the playback page
-    
-    return f"Authorized. Redirecting to the playback page..."
+    return redirect(url_for('playback.get_playback_state'))  # Redirect to the playback page
 
 def get_access_token():
     TOKEN_EXPIRATION = os.getenv('TOKEN_EXPIRATION')

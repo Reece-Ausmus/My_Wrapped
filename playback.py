@@ -18,6 +18,7 @@ def get_playback_state():
     if response.status_code == 200:
         artist = response.json()['item']['artists'][0]['name']
         track = response.json()['item']['name']
+        album = response.json()['item']['album']['name']
         progress_ms = response.json()['progress_ms']
         duration_ms = response.json()['item']['duration_ms']
         progress_minutes = progress_ms // 60000
@@ -28,6 +29,7 @@ def get_playback_state():
         <html>
             <body>
             <h1>Currently playing: {track} by {artist}</h1>
+            <p>Album: {album}</p>
             <p>Progress: {progress_minutes}:{progress_seconds:02d} / {total_minutes}:{total_seconds:02d}</p>
             </body>
         </html>

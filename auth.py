@@ -59,7 +59,7 @@ def callback():
     set_key('.env', 'TOKEN_EXPIRATION', str(time.time() + expires_in))
     load_dotenv(override=True)  # Reload the environment variables
 
-    return redirect(url_for('playback.get_playback_state'))  # Redirect to the playback page
+    return redirect(url_for('playback.current_state'))  # Redirect to the playback page
 
 def get_access_token():
     TOKEN_EXPIRATION = os.getenv('TOKEN_EXPIRATION')

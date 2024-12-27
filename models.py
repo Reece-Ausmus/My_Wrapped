@@ -19,7 +19,7 @@ class Track(db.Model):
     
 class Podcast(db.Model):
     __tablename__ = 'podcast'
-    __table_args__ = {'schema': 'podcasts_data'}  # Specify schema here
+    __table_args__ = {'schema': 'podcasts'}  # Specify schema here
     
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(150), nullable=False)

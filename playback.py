@@ -1,3 +1,5 @@
+from datetime import datetime
+from pytz import timezone
 import requests
 from flask import Blueprint
 from auth import get_access_token
@@ -35,7 +37,8 @@ def get_playback_state():
         progress_seconds = (progress_ms % 60000) // 1000
         total_minutes = duration_ms // 60000
         total_seconds = (duration_ms % 60000) // 1000
-        time_remaining = (duration_ms - progress_ms) // 1000
+        time_remaining = (duration_ms - progress_ms) // 1000 + 5 # Refresh after the song ends with a 5-second buffer
+        save_track_csv(artist, track, album, progress_ms, duration_ms)
         return f"""
         <html>
             <head>
@@ -73,3 +76,8 @@ def get_playback_state():
         """
     else:
         return {"code": response.status_code, "message": response.reason}
+    
+def save_track_csv(artist, track, album, progress_ms, duration_ms):
+    played_at = datetime.now(timezone('US/Eastern'))
+    with open('track_data.csv', 'a') as f:
+        f.write(f"{artist}|{track}|{album}|{progress_ms}|{duration_ms}|{played_at}\n")

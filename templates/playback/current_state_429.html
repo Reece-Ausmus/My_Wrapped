@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="refresh" content="{{ time_remaining }}" />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='style.css') }}"
+    />
+    <title>Currently Playing</title>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Rate limit exceeded. Retrying after {{ retry_after }} seconds.</h1>
+    </div>
+  </body>
+</html>

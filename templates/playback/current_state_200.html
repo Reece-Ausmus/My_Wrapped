@@ -15,8 +15,9 @@
       <h1>Currently playing: {{ track }} by {{ artist }}</h1>
       <p>Album: {{ album }}</p>
       <p>
-        Progress: {{ progress_minutes }}:{{ progress_seconds }} / {{
-        total_minutes }}:{{ total_seconds }}
+        Progress: {{ progress_minutes }}:{% if progress_seconds < 10 %}0{% endif
+        %}{{ progress_seconds }} / {{ total_minutes }}:{% if total_seconds < 10
+        %}0{% endif %}{{ total_seconds }}
       </p>
     </div>
   </body>

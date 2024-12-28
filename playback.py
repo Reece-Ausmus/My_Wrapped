@@ -31,7 +31,7 @@ def current_state():
         progress_seconds = (progress_ms % 60000) // 1000
         total_minutes = duration_ms // 60000
         total_seconds = (duration_ms % 60000) // 1000
-        time_remaining = (duration_ms - progress_ms) // 1000 + 5 # Refresh after the song ends with a 5-second buffer
+        time_remaining = ((duration_ms - progress_ms) // 1000) + 5 # Refresh after the song ends with a 5-second buffer
         # save_track_csv(artist, track, album, progress_ms, duration_ms)
         return render_template('playback/current_state_200.html', time_remaining=time_remaining, track=track, artist=artist, album=album, progress_minutes=progress_minutes, progress_seconds=progress_seconds, total_minutes=total_minutes, total_seconds=total_seconds)
     elif response.status_code == 204:

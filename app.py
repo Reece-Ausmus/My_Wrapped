@@ -85,11 +85,11 @@ if __name__ == "__main__":
                         break
                 except:
                     break
-                time.sleep(1)
-                print("Browser closed by the user...")
-                driver.quit()
-                print("Stopping the server...")
-                os.kill(os.getpid(), signal.SIGTERM)
+            time.sleep(1)
+            print("Browser closed by the user...")
+            driver.quit()
+            print("Stopping the server...")
+            os.kill(os.getpid(), signal.SIGTERM)
 
         browser_thread = threading.Thread(target=check_browser)
         browser_thread.start()

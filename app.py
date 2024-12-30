@@ -22,7 +22,7 @@ def create_app():
 
     app = Flask(__name__)
 
-     # Configure PostgreSQL Database
+    # Configure PostgreSQL Database
     app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('SQLALCHEMY_DATABASE_URI')
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
@@ -35,7 +35,7 @@ def create_app():
     return app
 
 def run_server(app):
-    app.run(port=12398)
+    app.run()
 
 def wait_for_server(url):
     while True:
@@ -51,11 +51,11 @@ def wait_for_server(url):
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description='Run the Flask app.')
-    parser.add_argument('-c', '--use-webbrowser', action='store_true', help='Use webbrowser to open the URL instead of webdriver')
+    parser.add_argument('-wb', '--use-webbrowser', action='store_true', help='Use webbrowser to open the URL instead of webdriver')
     args = parser.parse_args()
 
     app = create_app()
-    url = 'http://127.0.0.1:12398/auth'
+    url = 'http://127.0.0.1:5000/auth'
 
     print("Starting the server...")
 

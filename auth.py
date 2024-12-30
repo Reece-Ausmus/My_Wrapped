@@ -1,12 +1,12 @@
 import time
 import requests
-import webbrowser
 from flask import redirect, request, Blueprint, url_for
 import os
 import base64
 from dotenv import load_dotenv, set_key
 
 # Spotify API credentials
+load_dotenv(override=True)
 CLIENT_ID = os.getenv('CLIENT_ID')
 CLIENT_SECRET = os.getenv('CLIENT_SECRET')
 REDIRECT_URI = os.getenv('REDIRECT_URI')

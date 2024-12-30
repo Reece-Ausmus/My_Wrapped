@@ -51,7 +51,7 @@ def wait_for_server(url):
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description='Run the Flask app.')
-    parser.add_argument('-wb', '--use-webbrowser', action='store_true', help='Use webbrowser to open the URL instead of webdriver')
+    parser.add_argument('-wb', '--web-browser', action='store_true', help='Use webbrowser to open the URL instead of webdriver')
     args = parser.parse_args()
 
     app = create_app()
